@@ -1,6 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Container, Typography, List, ListItem, ListItemText, TextField, Button, Box, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import { 
+  Container, 
+  Typography, 
+  TextField, 
+  Button, 
+  Box, 
+  List, 
+  ListItem, 
+  ListItemText, 
+  IconButton, 
+  Snackbar,
+  MenuItem
+} from '@mui/material';
+import MuiAlert from '@mui/material/Alert';
+import DeleteIcon from '@mui/icons-material/Delete';
+
+const Alert = React.forwardRef(function Alert(props, ref) {
+  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
 
 const CourseInstanceList = () => {
   const [instances, setInstances] = useState([]);
@@ -8,6 +26,7 @@ const CourseInstanceList = () => {
   const [newInstance, setNewInstance] = useState({ year: '', semester: '', courseId: '' });
   const [year, setYear] = useState('');
   const [semester, setSemester] = useState('');
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
   useEffect(() => {
     fetchCourses();
@@ -25,6 +44,7 @@ const CourseInstanceList = () => {
       setCourses(response.data);
     } catch (error) {
       console.error('Error fetching courses:', error);
+      setSnackbar({ open: true, message: 'Error fetching courses', severity: 'error' });
     }
   };
 
@@ -34,6 +54,7 @@ const CourseInstanceList = () => {
       setInstances(response.data);
     } catch (error) {
       console.error('Error fetching instances:', error);
+      setSnackbar({ open: true, message: 'Error fetching course instances', severity: 'error' });
     }
   };
 
@@ -49,9 +70,31 @@ const CourseInstanceList = () => {
       if (year === newInstance.year && semester === newInstance.semester) {
         fetchInstances();
       }
+      setSnackbar({ open: true, message: 'Course instance created successfully', severity: 'success' });
     } catch (error) {
       console.error('Error creating instance:', error);
+      setSnackbar({ open: true, message: 'Error creating course instance', severity: 'error' });
     }
+  };
+
+  const handleDelete = async (instance) => {
+    console.log('Attempting to delete instance:', instance);
+    try {
+      const response = await axios.delete(`http://localhost:8081/api/instances/${instance.year}/${instance.semester}/${instance.course.id}`);
+      console.log('Delete response:', response);
+      fetchInstances();
+      setSnackbar({ open: true, message: 'Course instance deleted successfully', severity: 'success' });
+    } catch (error) {
+      console.error('Error deleting instance:', error.response ? error.response.data : error.message);
+      setSnackbar({ open: true, message: 'Error deleting course instance', severity: 'error' });
+    }
+  };
+
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setSnackbar({ ...snackbar, open: false });
   };
 
   return (
@@ -77,19 +120,20 @@ const CourseInstanceList = () => {
           fullWidth
           margin="normal"
         />
-        <FormControl fullWidth margin="normal">
-          <InputLabel>Course</InputLabel>
-          <Select
-            name="courseId"
-            value={newInstance.courseId}
-            onChange={handleInputChange}
-            required
-          >
-            {courses.map((course) => (
-              <MenuItem key={course.id} value={course.id}>{course.title}</MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+        <TextField
+          select
+          name="courseId"
+          label="Course"
+          value={newInstance.courseId}
+          onChange={handleInputChange}
+          required
+          fullWidth
+          margin="normal"
+        >
+          {courses.map((course) => (
+            <MenuItem key={course.id} value={course.id}>{course.title}</MenuItem>
+          ))}
+        </TextField>
         <Button type="submit" variant="contained" color="primary" sx={{ mt: 2 }}>
           Add Instance
         </Button>
@@ -118,7 +162,11 @@ const CourseInstanceList = () => {
 
       <List sx={{ mt: 2 }}>
         {instances.map((instance) => (
-          <ListItem key={instance.id}>
+          <ListItem key={instance.id} secondaryAction={
+            <IconButton edge="end" aria-label="delete" onClick={() => handleDelete(instance)}>
+              <DeleteIcon />
+            </IconButton>
+          }>
             <ListItemText 
               primary={`${instance.course.title} - Year: ${instance.year}, Semester: ${instance.semester}`} 
               secondary={`Course Code: ${instance.course.courseCode}`}
@@ -126,6 +174,12 @@ const CourseInstanceList = () => {
           </ListItem>
         ))}
       </List>
+
+      <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handleCloseSnackbar}>
+        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };
