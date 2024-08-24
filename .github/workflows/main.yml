@@ -24,4 +24,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: monisahmedrizvi/course-api-frontend:latest,monisahmedrizvi/course-api-frontend:${{ github.sha }}
+          tags: moinsahmedrizvi/course-api-frontend:latest,moinsahmedrizvi/course-api-frontend:${{ github.sha }}
