@@ -39,6 +39,10 @@ The application will be available at `http://localhost:3000`.
 
 ### Docker Deployment
 
+This frontend is designed to work in conjunction with the backend service using Docker Compose. The `docker-compose.yaml` file is located in the backend repository.
+
+To run the frontend independently using Docker:
+
 1. Build the Docker image:
    ```
    docker build -t course-api-frontend .
@@ -46,22 +50,37 @@ The application will be available at `http://localhost:3000`.
 
 2. Run the container:
    ```
-   docker run -p 3000:3000 course-api-frontend
+   docker run -p 3000:80 course-api-frontend
    ```
 
-## Project Structure
+Alternatively, you can pull the pre-built image from DockerHub:
 
-- `src/components/`: React components
-- `src/App.js`: Main application component
-- `src/index.js`: Entry point of the application
+```
+docker pull moinsahmedrizvi/course-api-frontend:latest
+docker run -p 3000:80 moinsahmedrizvi/course-api-frontend:latest
+```
+
+Note: When running the frontend independently, you'll need to ensure that the backend service is accessible and update the API endpoint in the frontend configuration accordingly.
 
 ## Docker Compose
 
-To run both the frontend and backend together, use the `docker-compose.yaml` file in the root of the backend repository:
+To run both the frontend and backend together:
 
-```
-docker-compose up
-```
+1. Ensure you have both the frontend and backend repositories cloned as sibling directories:
+   ```
+   parent-directory/
+   ├── course-api-frontend/
+   └── course-api-backend/
+   ```
+
+2. Navigate to the parent directory containing both repos.
+
+3. Run:
+   ```
+   docker-compose -f course-api-backend/docker-compose.yaml up
+   ```
+
+This will pull the Docker images for both services from DockerHub and run them together.
 
 ## Contributing
 

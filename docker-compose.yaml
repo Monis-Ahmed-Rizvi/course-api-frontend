@@ -1,0 +1,13 @@
+version: '3'
+services:
+  frontend:
+    image: moinsahmedrizvi/course-api-frontend:latest
+    ports:
+      - "3000:80"  # Map host port 3000 to container port 80
+    depends_on:
+      - backend
+
+  backend:
+    image: moinsahmedrizvi/course-api-backend:latest
+    ports:
+      - "8081:8081"
