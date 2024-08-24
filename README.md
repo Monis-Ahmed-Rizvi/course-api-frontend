@@ -4,23 +4,25 @@ This is the frontend application for the Course Management System, built with Re
 
 ## Features
 
-- List, create, update, and delete courses
-- List, create, and delete course instances
-- Search and sort functionality for courses
-- Pagination for course listings
+- User interface for managing courses and course instances
+- Create, read, update, and delete operations for courses
+- Create, read, and delete operations for course instances
 - Responsive design using Material-UI components
 
 ## Prerequisites
 
-- Node.js (v14 or later)
-- npm (v6 or later)
+- Node.js 14 or later
+- npm 6 or later
+- Docker (for containerization)
 
-## Installation
+## Setup and Running
+
+### Local Development
 
 1. Clone the repository:
    ```
-   git clone https://github.com/your-username/course-management-frontend.git
-   cd course-management-frontend
+   git clone https://github.com/your-username/course-api-frontend.git
+   cd course-api-frontend
    ```
 
 2. Install dependencies:
@@ -28,48 +30,42 @@ This is the frontend application for the Course Management System, built with Re
    npm install
    ```
 
-3. Create a `.env` file in the root directory and add the backend API URL:
+3. Start the development server:
    ```
-   REACT_APP_API_URL=http://localhost:8081/api
+   npm start
    ```
-
-## Running the Application
-
-To start the development server:
-
-```
-npm start
-```
 
 The application will be available at `http://localhost:3000`.
 
-## Building for Production
+### Docker Deployment
 
-To create a production build:
+1. Build the Docker image:
+   ```
+   docker build -t course-api-frontend .
+   ```
 
-```
-npm run build
-```
-
-The built files will be in the `build` directory.
+2. Run the container:
+   ```
+   docker run -p 3000:3000 course-api-frontend
+   ```
 
 ## Project Structure
 
 - `src/components/`: React components
-- `src/services/`: API service functions
 - `src/App.js`: Main application component
 - `src/index.js`: Entry point of the application
 
-## Dependencies
+## Docker Compose
 
-- React
-- React Router
-- Material-UI
-- Axios
+To run both the frontend and backend together, use the `docker-compose.yaml` file in the root of the backend repository:
+
+```
+docker-compose up
+```
 
 ## Contributing
 
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests.
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
 
 ## License
 
