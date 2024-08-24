@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { 
   Container, Typography, TextField, Button, Box, List, ListItem, 
   ListItemText, IconButton, Dialog, DialogTitle, DialogContent, 
-  DialogActions, Snackbar, MenuItem, Select, FormControl, InputLabel
+  DialogActions, Snackbar, MenuItem, Select, FormControl, InputLabel,
+  Pagination
 } from '@mui/material';
 import MuiAlert from '@mui/material/Alert';
 import { Delete, Edit, Add } from '@mui/icons-material';
@@ -20,15 +22,19 @@ const CourseList = () => {
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('title');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     fetchCourses();
-  }, []);
+  }, [page, searchTerm, sortBy]);
 
   const fetchCourses = async () => {
     try {
       const response = await axios.get('http://localhost:8081/api/courses');
       setCourses(response.data);
+      setTotalPages(Math.ceil(response.data.length / itemsPerPage));
     } catch (error) {
       console.error('Error fetching courses:', error);
       setSnackbar({ open: true, message: 'Error fetching courses', severity: 'error' });
@@ -87,12 +93,21 @@ const CourseList = () => {
     setSnackbar({ ...snackbar, open: false });
   };
 
-  const filteredCourses = courses
+  const handlePageChange = (event, value) => {
+    setPage(value);
+  };
+
+  const filteredAndSortedCourses = courses
     .filter(course => 
       course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       course.courseCode.toLowerCase().includes(searchTerm.toLowerCase())
     )
     .sort((a, b) => a[sortBy].localeCompare(b[sortBy]));
+
+  const paginatedCourses = filteredAndSortedCourses.slice(
+    (page - 1) * itemsPerPage,
+    page * itemsPerPage
+  );
 
   return (
     <Container>
@@ -103,7 +118,10 @@ const CourseList = () => {
           label="Search Courses"
           variant="outlined"
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            setPage(1);
+          }}
           fullWidth
         />
       </Box>
@@ -113,7 +131,10 @@ const CourseList = () => {
           <InputLabel>Sort By</InputLabel>
           <Select
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
+            onChange={(e) => {
+              setSortBy(e.target.value);
+              setPage(1);
+            }}
             label="Sort By"
           >
             <MenuItem value="title">Title</MenuItem>
@@ -133,14 +154,23 @@ const CourseList = () => {
       </Button>
 
       <List>
-        {filteredCourses.map((course) => (
-          <ListItem key={course.id} 
+        {paginatedCourses.map((course) => (
+          <ListItem 
+            key={course.id} 
+            component={Link} 
+            to={`/courses/${course.id}`}
             secondaryAction={
               <Box>
-                <IconButton edge="end" aria-label="edit" onClick={() => handleEdit(course)}>
+                <IconButton edge="end" aria-label="edit" onClick={(e) => {
+                  e.preventDefault();
+                  handleEdit(course);
+                }}>
                   <Edit />
                 </IconButton>
-                <IconButton edge="end" aria-label="delete" onClick={() => handleDelete(course.id)}>
+                <IconButton edge="end" aria-label="delete" onClick={(e) => {
+                  e.preventDefault();
+                  handleDelete(course.id);
+                }}>
                   <Delete />
                 </IconButton>
               </Box>
@@ -153,6 +183,15 @@ const CourseList = () => {
           </ListItem>
         ))}
       </List>
+
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2, mb: 2 }}>
+        <Pagination 
+          count={totalPages} 
+          page={page} 
+          onChange={handlePageChange} 
+          color="primary" 
+        />
+      </Box>
 
       <Dialog open={isDialogOpen} onClose={() => {
         setIsDialogOpen(false);

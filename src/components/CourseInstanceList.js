@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { 
   Container, 
@@ -78,14 +79,12 @@ const CourseInstanceList = () => {
   };
 
   const handleDelete = async (instance) => {
-    console.log('Attempting to delete instance:', instance);
     try {
-      const response = await axios.delete(`http://localhost:8081/api/instances/${instance.year}/${instance.semester}/${instance.course.id}`);
-      console.log('Delete response:', response);
+      await axios.delete(`http://localhost:8081/api/instances/${instance.year}/${instance.semester}/${instance.course.id}`);
       fetchInstances();
       setSnackbar({ open: true, message: 'Course instance deleted successfully', severity: 'success' });
     } catch (error) {
-      console.error('Error deleting instance:', error.response ? error.response.data : error.message);
+      console.error('Error deleting instance:', error);
       setSnackbar({ open: true, message: 'Error deleting course instance', severity: 'error' });
     }
   };
@@ -162,11 +161,23 @@ const CourseInstanceList = () => {
 
       <List sx={{ mt: 2 }}>
         {instances.map((instance) => (
-          <ListItem key={instance.id} secondaryAction={
-            <IconButton edge="end" aria-label="delete" onClick={() => handleDelete(instance)}>
-              <DeleteIcon />
-            </IconButton>
-          }>
+          <ListItem 
+            key={instance.id} 
+            component={Link}
+            to={`/instances/${instance.year}/${instance.semester}/${instance.course.id}`}
+            secondaryAction={
+              <IconButton 
+                edge="end" 
+                aria-label="delete" 
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleDelete(instance);
+                }}
+              >
+                <DeleteIcon />
+              </IconButton>
+            }
+          >
             <ListItemText 
               primary={`${instance.course.title} - Year: ${instance.year}, Semester: ${instance.semester}`} 
               secondary={`Course Code: ${instance.course.courseCode}`}
